@@ -2,6 +2,9 @@
   "engines": {
     "node": ">=16.0.0"
   },
+  "scripts": {
+    "prettier": "prettier --write 'contracts/**/*.sol'"
+  },
   "name": "hardhat-project",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^2.0.0",
@@ -9,6 +12,8 @@
     "@typescript-eslint/parser": "^5.45.0",
     "eslint": "^8.29.0",
     "eslint-config-prettier": "^8.5.0",
-    "hardhat": "^2.12.3"
+    "hardhat": "^2.12.3",
+    "prettier": "^2.8.0",
+    "prettier-plugin-solidity": "^1.0.0"
   }
 }

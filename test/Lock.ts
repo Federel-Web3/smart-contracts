@@ -3,6 +3,7 @@ import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
+
 describe("Lock", function () {
 	// We define a fixture to reuse the same setup in every test.
 	// We use loadFixture to run this setup once, snapshot that state,
@@ -119,6 +120,19 @@ describe("Lock", function () {
 					[lockedAmount, -lockedAmount]
 				);
 			});
+		});
+	});
+
+	describe("Immobile test", function () {
+		it("Should mint an Immobile", async function () {
+			const accounts = await ethers.getSigners();
+
+			const Immobile = await ethers.getContractFactory("GoodsAndRealEstate");
+			const immobile = await Immobile.deploy();
+
+			await immobile.mint_imovel(accounts[0].address);
+			const balance = await immobile.balanceOf(accounts[0].address, 0);
+			expect(balance).to.equal(1);
 		});
 	});
 });

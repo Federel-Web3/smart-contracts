@@ -69,12 +69,36 @@ abstract contract RegistryDAO is AccessControl, IRegistryDAO {
     proposal.receiverName = name;
     proposal.roleReceiver = roleReceiver;
     proposal.role = role;
+
+    emit Propose(
+      _lastProposalId,
+      description,
+      _minVotingPeriod,
+      roleReceiver,
+      msg.sender,
+      name,
+      role,
+      proposalType
+    );
+
     _lastProposalId += 1;
   }
 
   /*
+    Checks if the proposal is still votable
+  */
+  function votable(Proposal storage proposal) private {
+    if (proposal.votingPassed || proposal.livePeriod <= block.timestamp) {
+      proposal.votingPassed = true;
+      revert("Voting period has passed on this proposal");
+    }
+    if (_overseerVotes[proposal.id][msg.sender])
+      revert("This stakeholder already voted on this proposal");
+  }
+
+  /*
     Vote for a proposal, if it is still votable and the account hasn't voted yet
-  */ 
+  */
   function vote(uint256 proposalId, bool supportProposal) public onlyOverseer {
     Proposal storage proposal = _proposals[proposalId];
 
@@ -84,6 +108,8 @@ abstract contract RegistryDAO is AccessControl, IRegistryDAO {
     else proposal.votesAgainst++;
 
     _overseerVotes[proposalId][msg.sender] = true;
+
+    emit Vote(msg.sender, supportProposal, proposalId);
   }
 
   /*
@@ -113,24 +139,14 @@ abstract contract RegistryDAO is AccessControl, IRegistryDAO {
         _overseersAmount -= 1;
       }
     }
+    emit Execute(proposalId);
   }
+
   /*
     Returns the minimum amount of votes required to pass a proposal
   */
   function minVotesRequired() public view returns (uint256) {
     return _overseersAmount / _minRequiredDividend;
-  }
-
-  /*
-    Checks if the proposal is still votable
-  */
-  function votable(Proposal storage proposal) private {
-    if (proposal.votingPassed || proposal.livePeriod <= block.timestamp) {
-      proposal.votingPassed = true;
-      revert("Voting period has passed on this proposal");
-    }
-    if (_overseerVotes[proposal.id][msg.sender])
-      revert("This stakeholder already voted on this proposal");
   }
 
   /*
@@ -141,5 +157,6 @@ abstract contract RegistryDAO is AccessControl, IRegistryDAO {
     if (role == OVERSEER_ROLE) {
       _overseersAmount -= 1;
     }
+    emit RevokeSelf(msg.sender, role);
   }
 }

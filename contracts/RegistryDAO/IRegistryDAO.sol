@@ -26,19 +26,22 @@ interface IRegistryDAO {
     TypeOfProposal proposalType;
   }
 
-  event ProposalCreate(
-    uint256 id,
+  event Propose(
+    uint256 indexed id,
     string description,
     uint256 livePeriod,
-    uint256 votesFor,
-    uint256 votesAgainst,
-    bool votingPassed,
-    address roleReceiver,
-    address proposer,
+    address indexed roleReceiver,
+    address indexed proposer,
     string receiverName,
     bytes32 role,
     TypeOfProposal proposalType
   );
+
+  event Execute(uint256 indexed proposalId);
+
+  event Vote(address indexed voter, bool support, uint256 indexed proposalId);
+
+  event RevokeSelf(address sender, bytes32 role);
 
   /*
     Grants a role to a certain account, if it doesn't already have it
@@ -56,25 +59,19 @@ interface IRegistryDAO {
     Vote for a proposal, if it is still votable and the account hasn't voted yet
   */
 
-  function vote(
-    uint256 proposalId, 
-    bool supportProposal
-  ) external;
+  function vote(uint256 proposalId, bool supportProposal) external;
 
   /*
     Execute a proposal, if it has passed
   */
 
-  function execute(
-    uint256 proposalId
-  ) external;
+  function execute(uint256 proposalId) external;
 
   /*
     Returns the minimum amount of votes required for a proposal to pass
   */
 
-  function minVotesRequired()
-    external view returns (uint256);
+  function minVotesRequired() external view returns (uint256);
 
   /*
     Checks if a proposal is still votable
@@ -87,8 +84,5 @@ interface IRegistryDAO {
   /*
     Revoke the role of overseer from the account that calls this function
   */
-  function revokeSelf(
-    bytes32 role
-  ) external;
-
+  function revokeSelf(bytes32 role) external;
 }

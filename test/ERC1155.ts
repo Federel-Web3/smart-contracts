@@ -39,6 +39,27 @@ describe("ERC1155", () => {
     expect(balance.toString()).to.equal("1");
   });
 
+  it("should mint many immobiles", async () => {
+    for (let i = 1; i < ipfsHashes.length; i++) {
+      const tx = await goodsAndRealEstate.mint(
+        ethers.utils.toUtf8Bytes(ipfsHashes[i])
+      );
+      const minedTx = await tx.wait();
+
+      if (!minedTx.events) throw Error("failed to send event");
+      for (let i = 0; i < minedTx.events?.length; i++) {
+        const event = minedTx?.events[i];
+        if (!event) throw Error("no event");
+        if (event.event === "Mint") {
+          // é onde fica o inteiro do event que é mintado
+          if (event.args) mintedIds.push(event.args[1]);
+        }
+      }
+    }
+
+    expect(mintedIds.length).to.be.equal(ipfsHashes.length);
+  });
+
   it("Should check minted ipfs item", async () => {
     const cid = await goodsAndRealEstate["_immobiles(uint256)"](mintedIds[0]);
     expect(ethers.utils.toUtf8String(cid)).to.be.equal(ipfsHashes[0]);

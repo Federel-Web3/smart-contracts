@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
 contract GoodsAndRealEstate is ERC1155 {
-  uint256 public _id = 0;
+  mapping(uint256 => bytes) public _immobile;
 
   constructor() ERC1155("") {}
 
@@ -16,9 +16,22 @@ contract GoodsAndRealEstate is ERC1155 {
     bytes indexed ipfsHash
   );
 
-  function mint(bytes memory ipfsHash) public {
-    _mint(msg.sender, _id, 1, ipfsHash);
-    emit Mint(msg.sender, _id, 1, ipfsHash);
-    _id += 1;
+  /**
+   * @param cid_ ipfs content id
+   * Essa função recebe o cid do ipfs e faz um mapeamento
+   * dele para um valor de keccak256 dentro do contrato. Usamos uma conversão
+   * de uma hash de bytes32 para um inteiro para manter a compatibilidade
+   * com o padrão ERC1155 além de permitir a checagem de valores já !"mintados".
+   *
+   * This function receives the ipfs cid and maps it to it's keccak256 as an integer.
+   * this is done in order to acheive compatibility with ERC1155 pattern and still be able
+   * to check if the cid was already minted before
+   */
+  function mint(bytes memory cid_) public {
+    uint256 id = uint256(keccak256(abi.encodePacked(cid_)));
+    require(_immobile[id].length == 0, "Immobile already exists");
+    _immobile[id] = cid_;
+    _mint(msg.sender, id, 1, cid_);
+    emit Mint(msg.sender, id, 1, cid_);
   }
 }

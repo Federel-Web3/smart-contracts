@@ -18,11 +18,13 @@ pragma solidity ^0.8.0;
  */
 
 import "../RegistryDAO/RegistryDAO.sol";
+import "../ERC1155/GoodsAndRealEstate.sol";
 
 contract Registry {
     RegistryDAO public registryDAO;
+    GoodsAndRealEstate public goodsAndRealEstate;
 
     constructor(address registryDAOAddress, address ERC1155Address) {}
 
-    // function incorporate() {}
+    //  function incorporate() {}
 }

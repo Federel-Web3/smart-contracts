@@ -17,6 +17,13 @@ contract GoodsAndRealEstate is ERC1155 {
         uint256 timestamp
     );
 
+    event Burn(
+        address indexed burner,
+        uint256 indexed id,
+        uint256 amount,
+        uint256 timestamp
+    );
+
     /**
      * @param cid_ ipfs content id
      * @dev Essa função recebe o cid do ipfs e faz um mapeamento
@@ -43,5 +50,6 @@ contract GoodsAndRealEstate is ERC1155 {
      */
     function burn(uint256 id_) public {
         _burn(msg.sender, id_, 1);
+        emit Burn(msg.sender, id_, 1, block.timestamp);
     }
 }

@@ -41,6 +41,11 @@ describe("ERC1155", () => {
 
   it("Should check minted ipfs item", async () => {
     const cid = await goodsAndRealEstate["_immobiles(uint256)"](mintedIds[0]);
-    console.log(ethers.utils.toUtf8String(cid));
+    expect(ethers.utils.toUtf8String(cid)).to.be.equal(ipfsHashes[0]);
+  });
+
+  it("Should not allow to mint the same immobile twice", async () => {
+    const tx = goodsAndRealEstate.mint(ethers.utils.toUtf8Bytes(ipfsHashes[0]));
+    expect(tx).to.be.revertedWith("Immobile already exists");
   });
 });

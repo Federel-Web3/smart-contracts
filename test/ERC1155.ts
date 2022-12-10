@@ -1,39 +1,46 @@
 import { ethers } from "hardhat";
 import chai from "chai";
-import { BigNumber, BigNumberish } from "ethers";
+import { BigNumberish } from "ethers";
 import { ipfsHashes } from "../utils/ipfsHashes";
 import { GoodsAndRealEstate } from "../types";
 
 const { expect } = chai;
 
 describe("ERC1155", () => {
-  let immobile: GoodsAndRealEstate;
-  let mintedIds: BigNumberish[];
+  let goodsAndRealEstate: GoodsAndRealEstate;
+  const mintedIds: BigNumberish[] = [];
 
   it("Should mint an Immobile", async () => {
     const accounts = await ethers.getSigners();
 
     const Immobile = await ethers.getContractFactory("GoodsAndRealEstate");
-    immobile = await Immobile.deploy();
+    goodsAndRealEstate = await Immobile.deploy();
 
-    const tx = await immobile.mint(ethers.utils.toUtf8Bytes(ipfsHashes[0]));
+    const tx = await goodsAndRealEstate.mint(
+      ethers.utils.toUtf8Bytes(ipfsHashes[0])
+    );
     const minedTx = await tx.wait();
 
+    if (!minedTx.events) throw Error("failed to send event");
     for (let i = 0; i < minedTx.events?.length; i++) {
       const event = minedTx?.events[i];
+      if (!event) throw Error("no event");
       if (event.event === "Mint") {
-        if (event?.args[1]) {
-          mintedIds.push(BigNumber.from(event.args[1]));
-        }
+        // é onde fica o inteiro do event que é mintado
+        if (event.args) mintedIds.push(event.args[1]);
       }
     }
 
-    const balance = await immobile.balanceOf(accounts[0].address, 0);
+    const balance = await goodsAndRealEstate.balanceOf(
+      accounts[0].address,
+      mintedIds[0]
+    );
 
     expect(balance.toString()).to.equal("1");
   });
 
-  it("Should check minted ipfs item", () => {
-    console.log("aqui");
+  it("Should check minted ipfs item", async () => {
+    const cid = await goodsAndRealEstate["_immobiles(uint256)"](mintedIds[0]);
+    console.log(ethers.utils.toUtf8String(cid));
   });
 });

@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
 contract GoodsAndRealEstate is ERC1155 {
-  mapping(uint256 => bytes) public _immobile;
+  mapping(uint256 => bytes) public _immobiles;
 
   constructor() ERC1155("") {}
 
@@ -29,8 +29,8 @@ contract GoodsAndRealEstate is ERC1155 {
    */
   function mint(bytes memory cid_) public {
     uint256 id = uint256(keccak256(abi.encodePacked(cid_)));
-    require(_immobile[id].length == 0, "Immobile already exists");
-    _immobile[id] = cid_;
+    require(_immobiles[id].length == 0, "Immobile already exists");
+    _immobiles[id] = cid_;
     _mint(msg.sender, id, 1, cid_);
     emit Mint(msg.sender, id, 1, cid_);
   }

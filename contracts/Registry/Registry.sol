@@ -19,12 +19,76 @@ pragma solidity ^0.8.0;
 
 import "../RegistryDAO/RegistryDAO.sol";
 import "../ERC1155/GoodsAndRealEstate.sol";
+import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
-contract Registry {
-    RegistryDAO public registryDAO;
-    GoodsAndRealEstate public goodsAndRealEstate;
+contract Registry is ERC1155Holder {
+    RegistryDAO public _registryDAO;
+    GoodsAndRealEstate public _goodsAndRealEstate;
 
-    constructor(address registryDAOAddress, address ERC1155Address) {}
+    struct Incorporation {
+        uint256 lastId;
+        address employee;
+        address tabeliao;
+        bool tabeliaoVote;
+        bool employeeVote;
+        uint256[] previousRevision;
+    }
 
-    //  function incorporate() {}
+    mapping(uint256 => Incorporation) _incorporations;
+
+    constructor(address registryDAOAddress, address ERC1155Address) {
+        _registryDAO = RegistryDAO(registryDAOAddress);
+        _goodsAndRealEstate = GoodsAndRealEstate(ERC1155Address);
+    }
+
+    event IncorporateStart(uint256 indexed id, address incorporator);
+
+    /* @dev
+    Checks if the account has the role of Employee
+  */
+    modifier onlyEmployee() {
+        require(
+            _registryDAO.hasRole(_registryDAO.getEmployeeRole(), msg.sender),
+            "only employee allowed"
+        );
+        _;
+    }
+
+    modifier onlyTabeliao() {
+        require(
+            _registryDAO.hasRole(_registryDAO.gaetTabeliaoRole(), msg.sender),
+            "only tabeliao allowed"
+        );
+        _;
+    }
+
+    function incorporateStart(uint256 id) public onlyEmployee {
+        _goodsAndRealEstate.safeTransferFrom(
+            msg.sender,
+            address(this),
+            id,
+            1,
+            ""
+        );
+        Incorporation storage incorp = _incorporations[id];
+        incorp.lastId = id;
+        incorp.employee = msg.sender;
+
+        emit IncorporateStart(id, msg.sender);
+    }
+
+    //     function revert(uint256 id) public onlyEmployee {
+    //     _goodsAndRealEstate.safeTransferFrom(
+    //         msg.sender,
+    //         address(this),
+    //         id,
+    //         1,
+    //         ""
+    //     );
+    //     Incorporation storage incorp = _incorporations[id];
+    //     incorp.lastId = id;
+    //     incorp.employee = msg.sender;
+
+    //     emit IncorporateStart(id, msg.sender);
+    // }
 }

@@ -54,7 +54,8 @@ contract RegistryDAO is AccessControl {
         address indexed proposer,
         string receiverName,
         bytes32 role,
-        TypeOfProposal proposalType
+        TypeOfProposal proposalType,
+        uint256 timestamp
     );
 
     event Execute(uint256 indexed proposalId);
@@ -113,7 +114,8 @@ contract RegistryDAO is AccessControl {
             msg.sender,
             name,
             role,
-            proposalType
+            proposalType,
+            block.timestamp
         );
 
         _lastProposalId += 1;
@@ -196,5 +198,13 @@ contract RegistryDAO is AccessControl {
             _overseersAmount -= 1;
         }
         emit RevokeSelf(msg.sender, role);
+    }
+
+    function getEmployeeRole() public pure returns (bytes32) {
+        return EMPLOYEE_ROLE;
+    }
+
+    function gaetTabeliaoRole() public pure returns (bytes32) {
+        return TABELIAO_ROLE;
     }
 }

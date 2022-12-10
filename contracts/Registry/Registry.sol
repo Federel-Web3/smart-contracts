@@ -9,6 +9,12 @@ pragma solidity ^0.8.0;
  * Os bens são "mintados" no contrato GoodsAndRealEstate.sol e incorporados aqui.
  * Nesse contrato, é possível fazer cessão de uso, aforramento, Autorização de uso,
  * transferência e autorização.
+ *
+ * Esse contrato lida  também com a parte das concessões, aforramento,
+ * transferência e outras operações jurídicas dos terrenos da SPU.
+ * Os terrenos são representados no ERC1155 e os funcionários e tabeliões registrados no
+ * RegistryDAO são capazes de editar ou criar representações dos contratos jurídicos do
+ * mundo real neste contrato inteligente.
  */
 
 contract Registry {

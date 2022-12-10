@@ -14,7 +14,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./IRegistryDAO.sol";
 
-contract RegistryDAO is AccessControl, IRegistryDAO {
+abstract contract RegistryDAO is AccessControl, IRegistryDAO {
   bytes32 public constant OVERSEER_ROLE = keccak256("OVERSEER");
   bytes32 public constant EMPLOYEE_ROLE = keccak256("EMPLOYEE");
   bytes32 public constant TABELIAO_ROLE = keccak256("TABELIAO_ROLE");
@@ -23,20 +23,6 @@ contract RegistryDAO is AccessControl, IRegistryDAO {
   uint256 public _overseersAmount = 0;
   uint32 constant _minVotingPeriod = 1 weeks;
   uint16 constant _minRequiredDividend = 2;
-
-  struct Proposal {
-    uint256 id;
-    string description;
-    uint256 livePeriod;
-    uint256 votesFor;
-    uint256 votesAgainst;
-    bool votingPassed;
-    address roleReceiver;
-    address proposer;
-    string receiverName;
-    bytes32 role;
-    TypeOfProposal proposalType;
-  }
 
   mapping(uint256 => Proposal) public _proposals;
   mapping(uint256 => mapping(address => bool)) public _overseerVotes;
@@ -49,10 +35,17 @@ contract RegistryDAO is AccessControl, IRegistryDAO {
     _overseersAmount = overseers.length;
   }
 
+  /*
+    Checks if the account has the role of Overseer
+  */
   modifier onlyOverseer() {
     require(hasRole(OVERSEER_ROLE, msg.sender), "only overseer allowed");
     _;
   }
+
+  /*
+    Grants a role to a certain account, if it doesn't already have it
+  */
 
   function proposeRole(
     bytes32 role,
@@ -79,6 +72,9 @@ contract RegistryDAO is AccessControl, IRegistryDAO {
     _lastProposalId += 1;
   }
 
+  /*
+    Vote for a proposal, if it is still votable and the account hasn't voted yet
+  */ 
   function vote(uint256 proposalId, bool supportProposal) public onlyOverseer {
     Proposal storage proposal = _proposals[proposalId];
 
@@ -90,6 +86,9 @@ contract RegistryDAO is AccessControl, IRegistryDAO {
     _overseerVotes[proposalId][msg.sender] = true;
   }
 
+  /*
+    Execute a proposal, if it has passed
+  */
   function execute(uint256 proposalId) public {
     Proposal storage proposal = _proposals[proposalId];
 
@@ -115,11 +114,16 @@ contract RegistryDAO is AccessControl, IRegistryDAO {
       }
     }
   }
-
+  /*
+    Returns the minimum amount of votes required to pass a proposal
+  */
   function minVotesRequired() public view returns (uint256) {
     return _overseersAmount / _minRequiredDividend;
   }
 
+  /*
+    Checks if the proposal is still votable
+  */
   function votable(Proposal storage proposal) private {
     if (proposal.votingPassed || proposal.livePeriod <= block.timestamp) {
       proposal.votingPassed = true;
@@ -129,6 +133,9 @@ contract RegistryDAO is AccessControl, IRegistryDAO {
       revert("This stakeholder already voted on this proposal");
   }
 
+  /*
+    Revoke the role of overseer from the account that calls this function
+  */
   function revokeSelf(bytes32 role) public {
     revokeRole(role, msg.sender);
     if (role == OVERSEER_ROLE) {

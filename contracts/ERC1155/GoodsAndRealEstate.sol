@@ -13,7 +13,8 @@ contract GoodsAndRealEstate is ERC1155 {
     address indexed minter,
     uint256 indexed id,
     uint256 amount,
-    bytes indexed ipfsHash
+    bytes indexed ipfsHash,
+    uint256 timestamp
   );
 
   /**
@@ -32,6 +33,6 @@ contract GoodsAndRealEstate is ERC1155 {
     require(_immobiles[id].length == 0, "Immobile already exists");
     _immobiles[id] = cid_;
     _mint(msg.sender, id, 1, cid_);
-    emit Mint(msg.sender, id, 1, cid_);
+    emit Mint(msg.sender, id, 1, cid_, block.timestamp);
   }
 }

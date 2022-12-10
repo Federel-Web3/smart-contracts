@@ -17,8 +17,12 @@ pragma solidity ^0.8.0;
  * mundo real neste contrato inteligente.
  */
 
-contract Registry {
-  constructor() {}
+import "../RegistryDAO/RegistryDAO.sol";
 
-  // function incorporate() {}
+contract Registry {
+    RegistryDAO public registryDAO;
+
+    constructor(address registryDAOAddress, address ERC1155Address) {}
+
+    // function incorporate() {}
 }

@@ -12,6 +12,18 @@ interface IRegistryDAO {
     grant
   }
 
+  /*
+    Grants a role to a certain account, if it doesn't already have it
+  */
+
+  function proposeRole(
+    bytes32 role,
+    address roleReceiver,
+    string memory description,
+    string memory name,
+    TypeOfProposal proposalType
+  ) external;
+
   struct Proposal {
     uint256 id;
     string description;
@@ -25,35 +37,6 @@ interface IRegistryDAO {
     bytes32 role;
     TypeOfProposal proposalType;
   }
-
-  event Propose(
-    uint256 indexed id,
-    string description,
-    uint256 livePeriod,
-    address indexed roleReceiver,
-    address indexed proposer,
-    string receiverName,
-    bytes32 role,
-    TypeOfProposal proposalType
-  );
-
-  event Execute(uint256 indexed proposalId);
-
-  event Vote(address indexed voter, bool support, uint256 indexed proposalId);
-
-  event RevokeSelf(address sender, bytes32 role);
-
-  /*
-    Grants a role to a certain account, if it doesn't already have it
-  */
-
-  function proposeRole(
-    bytes32 role,
-    address roleReceiver,
-    string memory description,
-    string memory name,
-    TypeOfProposal proposalType
-  ) external;
 
   /*
     Vote for a proposal, if it is still votable and the account hasn't voted yet
@@ -77,9 +60,7 @@ interface IRegistryDAO {
     Checks if a proposal is still votable
   */
 
-  function votable(
-    Proposal memory proposal //must be memory or calldata
-  ) external; //but "storage" was given
+  function votable(Proposal memory roposal) external;
 
   /*
     Revoke the role of overseer from the account that calls this function

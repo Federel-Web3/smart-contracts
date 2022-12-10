@@ -40,7 +40,7 @@ describe("ERC1155", () => {
   });
 
   it("should mint many immobiles", async () => {
-    for (let i = 1; i < ipfsHashes.length; i++) {
+    for (let i = 1; i < 10; i++) {
       const tx = await goodsAndRealEstate.mint(
         ethers.utils.toUtf8Bytes(ipfsHashes[i])
       );
@@ -57,7 +57,7 @@ describe("ERC1155", () => {
       }
     }
 
-    expect(mintedIds.length).to.be.equal(ipfsHashes.length);
+    expect(mintedIds.length).to.be.equal(10);
   });
 
   it("Should check minted ipfs item", async () => {

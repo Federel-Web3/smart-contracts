@@ -14,7 +14,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./IRegistryDAO.sol";
 
-abstract contract RegistryDAO is AccessControl, IRegistryDAO {
+contract RegistryDAO is AccessControl {
   bytes32 public constant OVERSEER_ROLE = keccak256("OVERSEER");
   bytes32 public constant EMPLOYEE_ROLE = keccak256("EMPLOYEE");
   bytes32 public constant TABELIAO_ROLE = keccak256("TABELIAO_ROLE");
@@ -27,6 +27,42 @@ abstract contract RegistryDAO is AccessControl, IRegistryDAO {
   mapping(uint256 => Proposal) public _proposals;
   mapping(uint256 => mapping(address => bool)) public _overseerVotes;
   mapping(address => string) names;
+
+  enum TypeOfProposal {
+    revoke,
+    grant
+  }
+
+  struct Proposal {
+    uint256 id;
+    string description;
+    uint256 livePeriod;
+    uint256 votesFor;
+    uint256 votesAgainst;
+    bool votingPassed;
+    address roleReceiver;
+    address proposer;
+    string receiverName;
+    bytes32 role;
+    TypeOfProposal proposalType;
+  }
+
+  event Propose(
+    uint256 indexed id,
+    string description,
+    uint256 livePeriod,
+    address indexed roleReceiver,
+    address indexed proposer,
+    string receiverName,
+    bytes32 role,
+    TypeOfProposal proposalType
+  );
+
+  event Execute(uint256 indexed proposalId);
+
+  event Vote(address indexed voter, bool support, uint256 indexed proposalId);
+
+  event RevokeSelf(address sender, bytes32 role);
 
   constructor(address[] memory overseers) {
     for (uint i; i < overseers.length; i++) {

@@ -7,8 +7,6 @@ pragma solidity ^0.8.0;
  * @author Pedro Henrique Bufulin de Almeida
  * @notice Esse contrato implementa as funções de incorporação dos bens.
  * Os bens são "mintados" no contrato GoodsAndRealEstate.sol e incorporados aqui.
- * Nesse contrato, é possível fazer cessão de uso, aforramento, Autorização de uso,
- * transferência e autorização.
  *
  * Esse contrato lida  também com a parte das concessões, aforramento,
  * transferência e outras operações jurídicas dos terrenos da SPU.
@@ -29,9 +27,9 @@ contract Registry is ERC1155Holder {
         uint256 lastId;
         address employee;
         address tabeliao;
-        bool tabeliaoVote;
-        bool employeeVote;
-        uint256[] previousRevision;
+        bool reverted;
+        bool finished;
+        uint256 previousId;
     }
 
     mapping(uint256 => Incorporation) _incorporations;
@@ -42,6 +40,13 @@ contract Registry is ERC1155Holder {
     }
 
     event IncorporateStart(uint256 indexed id, address incorporator);
+    event IncorporateRevert(uint256 indexed id, address tabeliao);
+    event IncorporateFinish(uint256 indexed id, address tabeliao);
+    event IncorporateFinishSubstitution(
+        uint256 indexed id,
+        uint256 indexed previousId,
+        address tabeliao
+    );
 
     /* @dev
     Checks if the account has the role of Employee
@@ -62,7 +67,53 @@ contract Registry is ERC1155Holder {
         _;
     }
 
+    modifier ableToFinish(uint256 id) {
+        require(!_incorporations[id].reverted, "incorporation reverted");
+        require(
+            !_incorporations[id].finished,
+            "incorporation finished already"
+        );
+
+        require(
+            _incorporations[id].employee != address(0),
+            "incorporation not started"
+        );
+        _;
+    }
+
+    modifier ableToFinishSubstitution(uint256 id, uint256 previousId) {
+        require(!_incorporations[id].reverted, "incorporation reverted");
+        require(
+            !_incorporations[id].finished,
+            "incorporation finished already"
+        );
+        require(
+            _incorporations[id].employee != address(0),
+            "incorporation not started"
+        );
+        require(
+            !_incorporations[previousId].reverted,
+            "incorporation reverted for previousId"
+        );
+        require(
+            _incorporations[previousId].finished,
+            "previous incorporation not finished for previousId"
+        );
+
+        require(
+            _incorporations[previousId].employee != address(0),
+            "incorporation not started for previousId"
+        );
+
+        _;
+    }
+
     function incorporateStart(uint256 id) public onlyEmployee {
+        require(
+            _incorporations[id].employee == address(0),
+            "someone already started this incorporation"
+        );
+
         _goodsAndRealEstate.safeTransferFrom(
             msg.sender,
             address(this),
@@ -77,18 +128,43 @@ contract Registry is ERC1155Holder {
         emit IncorporateStart(id, msg.sender);
     }
 
-    //     function revert(uint256 id) public onlyEmployee {
-    //     _goodsAndRealEstate.safeTransferFrom(
-    //         msg.sender,
-    //         address(this),
-    //         id,
-    //         1,
-    //         ""
-    //     );
-    //     Incorporation storage incorp = _incorporations[id];
-    //     incorp.lastId = id;
-    //     incorp.employee = msg.sender;
+    function revertIncorporation(uint256 id) public onlyTabeliao {
+        require(
+            !_incorporations[id].reverted,
+            "incorporation already reverted"
+        );
 
-    //     emit IncorporateStart(id, msg.sender);
-    // }
+        _goodsAndRealEstate.safeTransferFrom(
+            address(this),
+            msg.sender,
+            id,
+            1,
+            ""
+        );
+        Incorporation storage incorp = _incorporations[id];
+        incorp.tabeliao = msg.sender;
+        incorp.reverted = true;
+        emit IncorporateRevert(id, msg.sender);
+    }
+
+    function finishIncorporation(
+        uint256 id
+    ) public onlyTabeliao ableToFinish(id) {
+        Incorporation storage incorp = _incorporations[id];
+        incorp.tabeliao = msg.sender;
+        incorp.finished = true;
+        emit IncorporateFinish(id, msg.sender);
+    }
+
+    function finishIncorporationSubstitution(
+        uint256 id,
+        uint256 previousId
+    ) public onlyTabeliao ableToFinishSubstitution(id, previousId) {
+        Incorporation storage incorp = _incorporations[id];
+        incorp.tabeliao = msg.sender;
+        incorp.previousId = previousId;
+        incorp.finished = true;
+
+        emit IncorporateFinishSubstitution(id, previousId, msg.sender);
+    }
 }

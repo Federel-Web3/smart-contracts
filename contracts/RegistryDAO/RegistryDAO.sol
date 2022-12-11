@@ -13,15 +13,19 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
+import "./Executor.sol";
+
 contract RegistryDAO is AccessControl {
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN");
     bytes32 public constant OVERSEER_ROLE = keccak256("OVERSEER");
     bytes32 public constant EMPLOYEE_ROLE = keccak256("EMPLOYEE");
-    bytes32 public constant TABELIAO_ROLE = keccak256("TABELIAO_ROLE");
+    bytes32 public constant TABELIAO_ROLE = keccak256("TABELIAO");
 
     uint256 public _lastProposalId = 0;
     uint256 public _overseersAmount = 0;
     uint32 constant _minVotingPeriod = 1 weeks;
     uint16 constant _minRequiredDividend = 2;
+    Executor public executor;
 
     mapping(uint256 => Proposal) public _proposals;
     mapping(uint256 => mapping(address => bool)) public _overseerVotes;
@@ -69,6 +73,11 @@ contract RegistryDAO is AccessControl {
             _setupRole(OVERSEER_ROLE, overseers[i]);
         }
         _overseersAmount = overseers.length;
+        executor = new Executor(address(this));
+        _setupRole(ADMIN_ROLE, address(executor));
+        _setRoleAdmin(OVERSEER_ROLE, ADMIN_ROLE);
+        _setRoleAdmin(EMPLOYEE_ROLE, ADMIN_ROLE);
+        _setRoleAdmin(TABELIAO_ROLE, ADMIN_ROLE);
     }
 
     /*
@@ -90,6 +99,7 @@ contract RegistryDAO is AccessControl {
         string memory name,
         TypeOfProposal proposalType
     ) public onlyOverseer {
+        require(role != ADMIN_ROLE, "can not propose admin role");
         require(
             proposalType == TypeOfProposal.grant ||
                 proposalType == TypeOfProposal.revoke,
@@ -99,7 +109,7 @@ contract RegistryDAO is AccessControl {
         Proposal storage proposal = _proposals[_lastProposalId];
         proposal.id = _lastProposalId;
         proposal.description = description;
-        proposal.livePeriod = _minVotingPeriod;
+        proposal.livePeriod = block.timestamp + _minVotingPeriod;
         proposal.proposalType = proposalType;
         proposal.proposer = msg.sender;
         proposal.receiverName = name;
@@ -130,7 +140,7 @@ contract RegistryDAO is AccessControl {
             revert("Voting period has passed on this proposal");
         }
         if (_overseerVotes[proposal.id][msg.sender])
-            revert("This stakeholder already voted on this proposal");
+            revert("This overseer already voted on this proposal");
     }
 
     /*
@@ -182,6 +192,10 @@ contract RegistryDAO is AccessControl {
         emit Execute(proposalId);
     }
 
+    function executeFromExecutor(uint256 proposalId) public {
+        executor.execute(proposalId);
+    }
+
     /*
     Returns the minimum amount of votes required to pass a proposal
   */
@@ -204,7 +218,11 @@ contract RegistryDAO is AccessControl {
         return EMPLOYEE_ROLE;
     }
 
-    function gaetTabeliaoRole() public pure returns (bytes32) {
+    function getTabeliaoRole() public pure returns (bytes32) {
         return TABELIAO_ROLE;
+    }
+
+    function getOverseerRole() public pure returns (bytes32) {
+        return OVERSEER_ROLE;
     }
 }

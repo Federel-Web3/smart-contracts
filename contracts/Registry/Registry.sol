@@ -61,7 +61,7 @@ contract Registry is ERC1155Holder {
 
     modifier onlyTabeliao() {
         require(
-            _registryDAO.hasRole(_registryDAO.gaetTabeliaoRole(), msg.sender),
+            _registryDAO.hasRole(_registryDAO.getTabeliaoRole(), msg.sender),
             "only tabeliao allowed"
         );
         _;

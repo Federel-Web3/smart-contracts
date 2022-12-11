@@ -9,6 +9,8 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
 const SCAN_KEY = process.env.SCAN_KEY;
 
+const CELOSCAN_API_KEY = process.env.CELOSCAN_API_KEY;
+
 const config: HardhatUserConfig = {
   solidity: "0.8.17",
   networks: {
@@ -29,8 +31,8 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: {
-      alfajores: "<CELOSCAN_API_KEY>",
-      celo: "<CELOSCAN_API_KEY>"
+      alfajores: String(CELOSCAN_API_KEY),
+      celo: String(CELOSCAN_API_KEY)
   },
   },
   typechain: {

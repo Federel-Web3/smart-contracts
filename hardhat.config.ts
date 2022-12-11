@@ -5,6 +5,8 @@ dotenv.config();
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
+const SCAN_KEY = process.env.SCAN_KEY;
+
 const config: HardhatUserConfig = {
   solidity: "0.8.17",
   networks: {
@@ -21,6 +23,9 @@ const config: HardhatUserConfig = {
       accounts: [String(PRIVATE_KEY)],
       allowUnlimitedContractSize: true,
     },
+  },
+  etherscan: {
+    apiKey: String(SCAN_KEY),
   },
   typechain: {
     outDir: "types",

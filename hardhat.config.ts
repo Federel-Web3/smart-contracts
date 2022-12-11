@@ -1,6 +1,8 @@
 import * as dotenv from "dotenv";
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
+//import "@nomiclabs/hardhat-etherscan";
+import "hardhat-celo";
 dotenv.config();
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
@@ -19,13 +21,17 @@ const config: HardhatUserConfig = {
       allowUnlimitedContractSize: true,
     },
     alfajores: {
+      chainId: 44787,
       url: "https://celo-alfajores-rpc.allthatnode.com/",
       accounts: [String(PRIVATE_KEY)],
       allowUnlimitedContractSize: true,
     },
   },
   etherscan: {
-    apiKey: String(SCAN_KEY),
+    apiKey: {
+      alfajores: "<CELOSCAN_API_KEY>",
+      celo: "<CELOSCAN_API_KEY>"
+  },
   },
   typechain: {
     outDir: "types",

@@ -42,7 +42,7 @@ contract RegistryDAO is AccessControl {
         uint256 livePeriod;
         uint256 votesFor;
         uint256 votesAgainst;
-        bool votingPassed;
+        bool executed;
         address roleReceiver;
         address proposer;
         string receiverName;
@@ -134,9 +134,8 @@ contract RegistryDAO is AccessControl {
     /*
     Checks if the proposal is still votable
   */
-    function votable(Proposal storage proposal) private {
-        if (proposal.votingPassed || proposal.livePeriod <= block.timestamp) {
-            proposal.votingPassed = true;
+    function votable(Proposal memory proposal) public view {
+        if (proposal.executed || proposal.livePeriod <= block.timestamp) {
             revert("Voting period has passed on this proposal");
         }
         if (_overseerVotes[proposal.id][msg.sender])
@@ -168,6 +167,7 @@ contract RegistryDAO is AccessControl {
     function execute(uint256 proposalId) public {
         Proposal storage proposal = _proposals[proposalId];
 
+        require(!proposal.executed, "proposal already executed");
         require(
             proposal.votesFor >= minVotesRequired(),
             "The proposal does not have the required amount of votes to pass"
@@ -181,14 +181,7 @@ contract RegistryDAO is AccessControl {
         if (uint8(proposal.proposalType) == uint8(TypeOfProposal.revoke)) {
             revokeRole(proposal.role, proposal.roleReceiver);
         }
-        if (proposal.role == OVERSEER_ROLE) {
-            if (proposal.proposalType == TypeOfProposal.grant) {
-                _overseersAmount += 1;
-            }
-            if (proposal.proposalType == TypeOfProposal.revoke) {
-                _overseersAmount -= 1;
-            }
-        }
+        proposal.executed = true;
         emit Execute(proposalId);
     }
 
@@ -203,17 +196,6 @@ contract RegistryDAO is AccessControl {
         return _overseersAmount / _minRequiredDividend;
     }
 
-    /*
-    Revoke the role of overseer from the account that calls this function
-  */
-    function revokeSelf(bytes32 role) public {
-        revokeRole(role, msg.sender);
-        if (role == OVERSEER_ROLE) {
-            _overseersAmount -= 1;
-        }
-        emit RevokeSelf(msg.sender, role);
-    }
-
     function getEmployeeRole() public pure returns (bytes32) {
         return EMPLOYEE_ROLE;
     }
@@ -224,5 +206,41 @@ contract RegistryDAO is AccessControl {
 
     function getOverseerRole() public pure returns (bytes32) {
         return OVERSEER_ROLE;
+    }
+
+    function grantRole(
+        bytes32 role,
+        address account
+    ) public virtual override onlyRole(getRoleAdmin(role)) {
+        _grantRole(role, account);
+        if (role == OVERSEER_ROLE) {
+            _overseersAmount += 1;
+        }
+    }
+
+    function revokeRole(
+        bytes32 role,
+        address account
+    ) public virtual override onlyRole(getRoleAdmin(role)) {
+        _revokeRole(role, account);
+
+        if (role == OVERSEER_ROLE) {
+            _overseersAmount -= 1;
+        }
+    }
+
+    function renounceRole(
+        bytes32 role,
+        address account
+    ) public virtual override {
+        require(
+            account == _msgSender(),
+            "AccessControl: can only renounce roles for self"
+        );
+
+        _revokeRole(role, account);
+        if (role == OVERSEER_ROLE) {
+            _overseersAmount -= 1;
+        }
     }
 }

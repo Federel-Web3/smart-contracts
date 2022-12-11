@@ -65,5 +65,4 @@ interface IRegistryDAO {
     /*
     Revoke the role of overseer from the account that calls this function
   */
-    function revokeSelf(bytes32 role) external;
 }

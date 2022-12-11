@@ -55,6 +55,12 @@ describe("RegistryDAO", () => {
     expect(tx).to.be.revertedWith("only overseer allowed");
   });
 
+  it("should read roles", async () => {
+    await registryDAO.getEmployeeRole();
+    await registryDAO.getOverseerRole();
+    await registryDAO.getTabeliaoRole();
+  });
+
   it("only overseers should be able to vote proposals", async () => {
     const accounts = await ethers.getSigners();
     const tx = registryDAO.connect(accounts[3]).vote(0, true);
@@ -86,8 +92,66 @@ describe("RegistryDAO", () => {
   it("proposal role receiver should receive the role after execution", async () => {
     await registryDAO.executeFromExecutor(0);
 
-    // const role = await registryDAO.getEmployeeRole();
-    // const hasRole = await registryDAO.hasRole(role, employee.address);
-    // expect(hasRole).to.be.true;
+    const role = await registryDAO.getEmployeeRole();
+    const hasRole = await registryDAO.hasRole(role, employee.address);
+    expect(hasRole).to.be.true;
+  });
+
+  it("should revert if execution is attemted again", async () => {
+    const tx = registryDAO.executeFromExecutor(0);
+
+    expect(tx).to.be.revertedWith("proposal already executed");
+  });
+
+  it("should be possible to renounce roles", async () => {
+    const role = await registryDAO.getEmployeeRole();
+
+    await registryDAO.connect(employee).renounceRole(role, employee.address);
+    const hasRole = await registryDAO.hasRole(role, employee.address);
+    expect(hasRole).to.be.false;
+  });
+
+  it("should be possible to propose overseer role", async () => {
+    const accounts = await ethers.getSigners();
+
+    const role = await registryDAO.getOverseerRole();
+
+    await registryDAO
+      .connect(accounts[1])
+      .proposeRole(
+        role,
+        employee.address,
+        "adicionado supervisor",
+        "Paulo Guina",
+        1
+      );
+  });
+
+  it("should grant supervisor role after voting", async () => {
+    const accounts = await ethers.getSigners();
+
+    const role = await registryDAO.getOverseerRole();
+
+    await registryDAO.connect(accounts[0]).vote(1, true);
+
+    await registryDAO.executeFromExecutor(1);
+
+    const hasRole = await registryDAO.hasRole(role, employee.address);
+    expect(hasRole).to.be.true;
+    const overseersAmount = await registryDAO._overseersAmount();
+
+    expect(overseersAmount.toString()).to.be.equal("3");
+  });
+
+  it("should grant supervisor role after voting", async () => {
+    const role = await registryDAO.getOverseerRole();
+
+    await registryDAO.connect(employee).renounceRole(role, employee.address);
+
+    const hasRole = await registryDAO.hasRole(role, employee.address);
+    expect(hasRole).to.be.false;
+    const overseersAmount = await registryDAO._overseersAmount();
+
+    expect(overseersAmount.toString()).to.be.equal("2");
   });
 });

@@ -1,8 +1,8 @@
 import * as dotenv from "dotenv";
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
+//import "hardhat-celo";
 //import "@nomiclabs/hardhat-etherscan";
-import "hardhat-celo";
 dotenv.config();
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;

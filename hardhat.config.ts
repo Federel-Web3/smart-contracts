@@ -6,6 +6,7 @@ import "@nomicfoundation/hardhat-toolbox";
 dotenv.config();
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
+const PRIVATE_KEY_2 = process.env.PRIVATE_KEY_2;
 
 const SCAN_KEY = process.env.SCAN_KEY;
 
@@ -23,7 +24,7 @@ const config: HardhatUserConfig = {
     alfajores: {
       chainId: 44787,
       url: "https://celo-alfajores-rpc.allthatnode.com/",
-      accounts: [String(PRIVATE_KEY)],
+      accounts: [String(PRIVATE_KEY), String(PRIVATE_KEY_2)],
       allowUnlimitedContractSize: true,
     },
   },

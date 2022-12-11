@@ -1,7 +1,7 @@
 import { run } from "hardhat";
 
 async function main() {
-  const ERC1155 = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+  const ERC1155 = "0x92fBfA287A0F39c32AED0Dd8E9f5D2b17243e0eD";
 
   try {
     await run("verify:verify", {

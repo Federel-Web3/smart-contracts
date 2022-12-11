@@ -1,15 +1,13 @@
 import * as dotenv from "dotenv";
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
-//import "hardhat-celo";
-//import "@nomiclabs/hardhat-etherscan";
+// import "hardhat-celo";
+// import "@nomiclabs/hardhat-etherscan";
 dotenv.config();
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
 const SCAN_KEY = process.env.SCAN_KEY;
-
-const CELOSCAN_API_KEY = process.env.CELOSCAN_API_KEY;
 
 const config: HardhatUserConfig = {
   solidity: "0.8.17",
@@ -31,9 +29,19 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: {
-      alfajores: String(CELOSCAN_API_KEY),
-      celo: String(CELOSCAN_API_KEY)
-  },
+      alfajores: String(SCAN_KEY),
+      celo: String(SCAN_KEY),
+    },
+    customChains: [
+      {
+        network: "alfajores",
+        chainId: 44787,
+        urls: {
+          apiURL: "https://api-alfajores.celoscan.io/api",
+          browserURL: "https://alfajores.celoscan.io/",
+        },
+      },
+    ],
   },
   typechain: {
     outDir: "types",

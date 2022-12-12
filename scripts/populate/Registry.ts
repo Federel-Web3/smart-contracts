@@ -3,7 +3,8 @@ import { text } from "stream/consumers";
 import { ipfsHashes } from "../../utils/ipfsHashes";
 //Populate the testnet with proposals and data
 async function main() {
-  const [owner] = await ethers.getSigners();
+  const [acc1, acc2] = await ethers.getSigners();
+
   console.log("address: ", owner.address);
   console.log("balance: ", (await owner.getBalance()).toString());
 

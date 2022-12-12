@@ -39,11 +39,11 @@ contract Registry is ERC1155Holder {
     _goodsAndRealEstate = GoodsAndRealEstate(ERC1155Address);
   }
 
-  event IncorporateStart(uint256 indexed id, address incorporator);
-  event IncorporateRevert(uint256 indexed id, address tabeliao);
-  event IncorporateFinish(uint256 indexed id, address tabeliao);
+  event IncorporateStart(uint256 indexed itemId, address incorporator);
+  event IncorporateRevert(uint256 indexed itemId, address tabeliao);
+  event IncorporateFinish(uint256 indexed itemId, address tabeliao);
   event IncorporateFinishUpdate(
-    uint256 indexed id,
+    uint256 indexed itemId,
     uint256 indexed previousId,
     address tabeliao
   );

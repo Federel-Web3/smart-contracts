@@ -5,12 +5,12 @@ import { ipfsHashes } from "../../utils/ipfsHashes";
 async function main() {
   const [acc1, acc2] = await ethers.getSigners();
 
-  console.log("address: ", owner.address);
-  console.log("balance: ", (await owner.getBalance()).toString());
+  console.log("address: ", acc1.address);
+  console.log("balance: ", (await acc1.getBalance()).toString());
 
-  const ERC1155 = "0x415d8B75d168d0aa722dAB5CcDB8c122553c4C16";
-  const registryDAO = "0x1723642DC542d480A5D7a323779B6390A78950bF";
-  const registry = "0x06D15664b28d5eCC525ec137E2A30B8Fe25a7567";
+  const ERC1155 = "0x70E3b68E7bbdf525babE5B0Ec4d8f3EA676f1345";
+  const registryDAO = "0x3f7C7BA8689bcD40F9bF04a8ce78E95C9BcA43De";
+  const registry = "0xFC22fB792c33d687A41679D62eC2a9E2eEC44A3f";
 
   const Immobile = await ethers.getContractFactory("GoodsAndRealEstate");
   const goodsAndRealEstate = await Immobile.attach(ERC1155);

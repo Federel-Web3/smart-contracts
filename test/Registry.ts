@@ -32,7 +32,7 @@ describe("Registry", () => {
     goodsAndRealEstate = await GoodsAndRealEstateFactory.deploy();
   });
 
-  it("should assign one employe and one tabelião ", async () => {
+  it("should assign one employee and one tabelião ", async () => {
     const [acc1, , acc3, acc4] = await ethers.getSigners();
 
     const role = await registryDAO.getEmployeeRole();

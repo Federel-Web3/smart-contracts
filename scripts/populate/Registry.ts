@@ -1,5 +1,7 @@
 import { ethers } from "hardhat";
-
+import { text } from "stream/consumers";
+import { ipfsHashes } from "../../utils/ipfsHashes";
+//Populate the testnet with proposals and data
 async function main() {
   const [owner] = await ethers.getSigners();
   console.log("address: ", owner.address);
@@ -11,8 +13,15 @@ async function main() {
 
   const Immobile = await ethers.getContractFactory("GoodsAndRealEstate");
   const goodsAndRealEstate = await Immobile.attach(ERC1155);
-
+  
   console.log("contract address", goodsAndRealEstate.address);
+  //Minting 10 tokens
+  for (let i = 0; i < 10; i++) {
+    const tx = await goodsAndRealEstate.mint(ethers.utils.toUtf8Bytes(ipfsHashes[i]));
+    tx.wait();
+    console.log("minted", ipfsHashes[i]);
+  }
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere
